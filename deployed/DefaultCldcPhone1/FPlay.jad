@@ -1,0 +1,17 @@
+MIDlet-1: FPlay,/Icon.png,fplay.FPlay
+MIDlet-Description: Folder Player
+MIDlet-Icon: /Icon.png
+MIDlet-Jar-Size: 121768
+MIDlet-Jar-URL: FPlay.jar
+MIDlet-Name: FPlay
+MIDlet-Permissions: javax.microedition.io.Connector.file.read
+MIDlet-Splash-Screen-Image: suppress
+MIDlet-Vendor: Carlos Rafael Gimenes das Neves
+MIDlet-Version: 1.0.64
+MicroEdition-Configuration: CLDC-1.1
+MicroEdition-Profile: MIDP-2.0
+Nokia-MIDlet-No-Exit: true
+Nokia-MIDlet-On-Screen-Keypad: no
+Nokia-MIDlet-Tap-Detection-Options: 0,0
+Nokia-MIDlet-UID-1: 0xEBA00000
+Nokia-UI-Enhancement: MusicKeysSupported
