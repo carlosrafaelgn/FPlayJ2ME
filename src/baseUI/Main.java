@@ -189,6 +189,11 @@ public final class Main extends Canvas implements CommandListener, Container, Me
 	
 		//the first three ones use the same default key codes!
 		
+		//technique taken from
+		//http://knol.google.com/k/j2me-keycodes#
+		//http://www.iteye.com/topic/179073
+		//http://www.developer.nokia.com/Community/Wiki/Platform_independent_key_events_processing_in_Java_ME
+
 		//detecting NOKIA or SonyEricsson
 		try {
 			final String currentPlatform = System.getProperty("microedition.platform");
