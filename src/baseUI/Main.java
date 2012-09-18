@@ -91,10 +91,11 @@ public final class Main extends Canvas implements CommandListener, Container, Me
 	private static final int CFG_ENVFONTUIINDEX = -0x0007;
 	private static final int CFG_ENVTRANSITION = -0x0008;
 	private static final int CFG_SSTIMEOUT = -0x0009;
+	private static final int CFG_ENVPREVENTVERTICALMENU = -0x000A;
 	
 	private static int EnvPlatform;
 	private static int EnvMenuX, EnvMenuY, EnvUIEffects, EnvFontUIIndex, EnvTouchFeedbackLevel, EnvTransition;
-	private static boolean EnvHasPointer, EnvMenuAbove, EnvMenuVertical, EnvRightHanded;
+	private static boolean EnvHasPointer, EnvMenuAbove, EnvIsMenuVertical, EnvPreventVerticalMenu, EnvRightHanded;
 	
 	private static int ThreadProcessing;
 	private static Window FocusWindow, AppWindow;
@@ -287,10 +288,10 @@ public final class Main extends Canvas implements CommandListener, Container, Me
 			initializeDefaultKeysDetection(-20, -7);
 			initializeDefaultKeysDetection(1, 20);
 			if (KeyLeft == 0) KeyLeft = -2;
-			if (KeyUp == 0)KeyUp = -1;
-			if (KeyRight == 0)KeyRight = -5;
-			if (KeyDown == 0)KeyDown = -6;
-			if (KeyOK == 0)KeyOK = -20;
+			if (KeyUp == 0) KeyUp = -1;
+			if (KeyRight == 0) KeyRight = -5;
+			if (KeyDown == 0) KeyDown = -6;
+			if (KeyOK == 0) KeyOK = -20;
 			
 			String softkeyMoto = "";
 			String softkeyMoto1 = "";
@@ -394,6 +395,7 @@ public final class Main extends Canvas implements CommandListener, Container, Me
 		EnvTouchFeedbackLevel = map.getUByte(CFG_ENVTOUCHLEVEL, (EnvHasPointer ? 4 : 0));
 		EnvRightHanded = map.getBoolean(CFG_ENVRIGHTHANDED, true);
 		EnvMenuAbove = map.getBoolean(CFG_ENVMENUABOVE, false);
+		EnvPreventVerticalMenu = map.getBoolean(CFG_ENVPREVENTVERTICALMENU, false);
 		EnvUIEffects = map.getUByte(CFG_ENVUIEFFECTS, 2);
 		EnvFontUIIndex = map.getUByte(CFG_ENVFONTUIINDEX, (EnvHasPointer ? 2 : 0));
 		EnvTransition = map.getInt(CFG_ENVTRANSITION, 0);
@@ -421,6 +423,7 @@ public final class Main extends Canvas implements CommandListener, Container, Me
 		map.putInt(CFG_ENVTOUCHLEVEL, EnvTouchFeedbackLevel);
 		map.putBoolean(CFG_ENVRIGHTHANDED, EnvRightHanded);
 		map.putBoolean(CFG_ENVMENUABOVE, EnvMenuAbove);
+		map.putBoolean(CFG_ENVPREVENTVERTICALMENU, EnvPreventVerticalMenu);
 		map.putInt(CFG_ENVUIEFFECTS, EnvUIEffects);
 		map.putInt(CFG_ENVFONTUIINDEX, EnvFontUIIndex);
 		map.putInt(CFG_ENVTRANSITION, EnvTransition);
@@ -475,6 +478,10 @@ public final class Main extends Canvas implements CommandListener, Container, Me
 		System.gc();
 	}
 	
+	public static void hideCanvas() {
+		ParentDisplay.setCurrent(null);
+	}
+
 	public static void showCanvas() {
 		postMessage(Main, MSG_SHOWCANVAS);
 	}
@@ -652,7 +659,25 @@ public final class Main extends Canvas implements CommandListener, Container, Me
 	}
 	
 	public static boolean environmentIsMenuVertical() {
-		return EnvMenuVertical;
+		return EnvIsMenuVertical;
+	}
+	
+	public static boolean environmentIsPreventingVerticalMenu() {
+		return EnvPreventVerticalMenu;
+	}
+	
+	public static void environmentSetPreventVerticalMenu(boolean preventVerticalMenu) {
+		if (EnvPreventVerticalMenu != preventVerticalMenu) {
+			environmentPrepareForChanges();
+			
+			EnvPreventVerticalMenu = preventVerticalMenu;
+			
+			environmentDispatchChange(Behaviour.ENV_MENUPOSITION);
+			
+			Main.sizeChanged(Main.getWidth(), Main.getHeight());
+			
+			System.gc();
+		}
 	}
 	
 	private static void environmentRecalculateDimensions() {
@@ -663,8 +688,8 @@ public final class Main extends Canvas implements CommandListener, Container, Me
 		final int buttonH = Customizer.getButtonHeight();
 		final int containerH = buttonH + offset;
 		
-		if (ScreenWidth <= ScreenHeight) {
-			EnvMenuVertical = false;
+		if (ScreenWidth <= ScreenHeight || EnvPreventVerticalMenu) {
+			EnvIsMenuVertical = false;
 			
 			//environmentDispatchChange(Behaviour.ENV_SIZE);
 			
@@ -684,7 +709,7 @@ public final class Main extends Canvas implements CommandListener, Container, Me
 			MenuRBtn.setTextAlignment(Graphics.RIGHT);
 			MenuSpacer.reposition(0, 0, 0, 0, false);
 		} else {
-			EnvMenuVertical = true;
+			EnvIsMenuVertical = true;
 			
 			//environmentDispatchChange(Behaviour.ENV_SIZE);
 			

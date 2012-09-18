@@ -89,33 +89,32 @@ final class ColorGrid extends Control {
 		
 		colors = new int[16 + 16 + (16 * V.length * S.length)];
 		
-		colors[0] = 0x6688FF;
-		colors[1] = 0x0000CC;
-		colors[2] = 0x3355AA;
-		colors[3] = 0xFF8800;
-		colors[4] = 0xFF0000;
-		colors[5] = 0x800000;
-		colors[6] = 0x00FF00;
-		colors[7] = 0x008000;
-		colors[8] = 0x0000FF;
-		colors[9] = 0x000080;
-		colors[10] = 0xFFFF00;
-		colors[11] = 0x808000;
-		colors[12] = 0xFF00FF;
-		colors[13] = 0x800080;
-		colors[14] = 0x00FFFF;
-		colors[15] = 0x008080;
-		colors[16] = 0x000000;
-		colors[17] = 0xFFFFFF;
+		colors[0] = 0xFF6688FF;
+		colors[1] = 0xFF0000CC;
+		colors[2] = 0xFF3355AA;
+		colors[3] = 0xFFFF8800;
+		colors[4] = 0xFFFF0000;
+		colors[5] = 0xFF800000;
+		colors[6] = 0xFF00FF00;
+		colors[7] = 0xFF008000;
+		colors[8] = 0xFF0000FF;
+		colors[9] = 0xFF000080;
+		colors[10] = 0xFFFFFF00;
+		colors[11] = 0xFF808000;
+		colors[12] = 0xFFFF00FF;
+		colors[13] = 0xFF800080;
+		colors[14] = 0xFF00FFFF;
+		colors[15] = 0xFF008080;
+		colors[16] = 0xFF000000;
+		colors[17] = 0xFFFFFFFF;
 		
 		//14 shades of gray (black and white have been
 		//moved to the first block)
 		for (i = 1; i < 15; i++) {
 			x = i;
 			x |= (x << 4);
-			x |= (x << 8);
-			x |= (x << 8);
-			colors[18 + i] = x;
+			x |= (x << 8) | (x << 16);
+			colors[17 + i] = 0xFF000000 | x;
 		}
 		
 		//more colors
@@ -137,7 +136,7 @@ final class ColorGrid extends Control {
 		
 		colCount = colors.length;
 		rowCount = 1;
-		setSelectedIndex(indexFromColor(initialColor));
+		setSelectedIndex(indexFromColor(0xFF000000 | initialColor));
 	}
 	
 	private final int indexFromColor(int color) {

@@ -41,7 +41,7 @@ import baseUtil.Map;
 public final class Behaviour extends baseUI.Behaviour {
 	private static boolean EnvVolumeControl, EnvLoadNextSong;
 	private static int EnvControlButtons;
-	public static int KeyDel, KeyVolDn, KeyVolUp, KeyPause, KeyNext, KeyPrev;
+	public static int KeyDel, KeyVolDn, KeyVolUp, KeyPause, KeyNext, KeyPrev, KeySel;
 	
 	public static final int ENV_VOLUMECONTROL = 0x00010000;
 	
@@ -58,6 +58,7 @@ public final class Behaviour extends baseUI.Behaviour {
 	private static final int CFG_ENVLOADNEXTSONG = 0x0009;
 	private static final int CFG_SONGFORMAT = 0x000A;
 	private static final int CFG_BROWSERFOLDER = 0x000B;
+	private static final int CFG_KEYSEL = 0x000C;
 	
 	public static boolean environmentGetLoadNextSong() {
 		return EnvLoadNextSong;
@@ -120,6 +121,7 @@ public final class Behaviour extends baseUI.Behaviour {
 		KeyPrev = map.getShort(CFG_KEYPREV, Main.KeyLeft);
 		KeyVolDn = map.getShort(CFG_KEYVOLDN, '*');
 		KeyVolUp = map.getShort(CFG_KEYVOLUP, '#');
+		KeySel = map.getShort(CFG_KEYSEL, '5');
 		EnvControlButtons = map.getUByte(CFG_ENVCONTROLBUTTONS, 2);
 		EnvVolumeControl = map.getBoolean(CFG_ENVVOLUMECONTROL, false);
 		EnvLoadNextSong = map.getBoolean(CFG_ENVLOADNEXTSONG, false);
@@ -140,6 +142,7 @@ public final class Behaviour extends baseUI.Behaviour {
 		map.putInt(CFG_KEYPREV, KeyPrev);
 		map.putInt(CFG_KEYVOLDN, KeyVolDn);
 		map.putInt(CFG_KEYVOLUP, KeyVolUp);
+		map.putInt(CFG_KEYSEL, KeySel);
 		map.putInt(CFG_ENVCONTROLBUTTONS, EnvControlButtons);
 		map.putBoolean(CFG_ENVVOLUMECONTROL, EnvVolumeControl);
 		map.putBoolean(CFG_ENVLOADNEXTSONG, EnvLoadNextSong);

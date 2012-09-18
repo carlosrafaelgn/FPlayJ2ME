@@ -157,12 +157,15 @@ final class WindowPlayer extends Window implements MessageListener, PlayerListen
 		player = new Player(volume, lasttime, currentSong, this, isRadioMode, isRadioStereo);
 		equalizer = Equalizer.createEqualizer(player, map);
 		
-		resetGlobalVolume();
+		//resetGlobalVolume();
 	}
 	
-	private final void resetGlobalVolume() {
-		if (Behaviour.environmentHasVolumeControl()) {
-			player.setGlobalVolume(100);
+	private final void resetGlobalVolume(boolean verbose) {
+		//if (Behaviour.environmentHasVolumeControl()) {
+		//	player.resetGlobalVolume();
+		//}
+		if (!player.resetGlobalVolume() && verbose) {
+			Main.alertShow("Não foi possível alterar o volume global!", true);
 		}
 	}
 	
@@ -339,12 +342,13 @@ final class WindowPlayer extends Window implements MessageListener, PlayerListen
 	public boolean eventKeyConfigCompleted(int[] keys) {
 		Main.KeyPgUp = keys[0];
 		Main.KeyPgDn = keys[1];
-		Behaviour.KeyDel = keys[2];
-		Behaviour.KeyPrev = keys[3];
-		Behaviour.KeyNext = keys[4];
-		Behaviour.KeyPause = keys[5];
-		Behaviour.KeyVolDn = keys[6];
-		Behaviour.KeyVolUp = keys[7];
+		Behaviour.KeySel = keys[2];
+		Behaviour.KeyDel = keys[3];
+		Behaviour.KeyPrev = keys[4];
+		Behaviour.KeyNext = keys[5];
+		Behaviour.KeyPause = keys[6];
+		Behaviour.KeyVolDn = keys[7];
+		Behaviour.KeyVolUp = keys[8];
 		Main.configSave();
 		return true;
 	}
@@ -389,12 +393,20 @@ final class WindowPlayer extends Window implements MessageListener, PlayerListen
 	public final void eventFileCancelled(WindowFileChooser window) {
 	}
 	
+	private final void startMarking() {
+		if (isProcessingThreadFree()) {
+			//can't let mark while inserting...
+			listBox.setMarking(true);
+			Main.commandBarRefresh();
+		}
+	}
+
 	public final void eventMenuCommand(Menu menu, MenuItem item) {
 		switch (menu.getId()) {
 		case 1: //player menu
 			switch (item.getId()) {
-			case 1: //Modo Carro
-				Main.openWindow(new WindowPlayerCar(player, equalizer, this, commandExit, commandPrev, commandPause, commandNext));
+			case 1: //Redef. Volume //Modo Carro
+				resetGlobalVolume(true); //Main.openWindow(new WindowPlayerCar(player, equalizer, this, commandExit, commandPrev, commandPause, commandNext));
 				break;
 			case 2: //Ouvir...
 				listChangeMode();
@@ -432,6 +444,7 @@ final class WindowPlayer extends Window implements MessageListener, PlayerListen
 				Main.openWindow(new WindowKeyConfig(new int[] {
 						Main.KeyPgUp,
 						Main.KeyPgDn,
+						Behaviour.KeySel,
 						Behaviour.KeyDel,
 						Behaviour.KeyPrev,
 						Behaviour.KeyNext,
@@ -440,6 +453,7 @@ final class WindowPlayer extends Window implements MessageListener, PlayerListen
 						Behaviour.KeyVolUp }, new String[] {
 						"Página Anterior",
 						"Próxima Página",
+						"Iniciar Seleção",
 						"Remover",
 						"Música Anterior",
 						"Próxima Música",
@@ -449,6 +463,9 @@ final class WindowPlayer extends Window implements MessageListener, PlayerListen
 				break;
 			case 3: //Cores...
 				Main.openWindow(new WindowColorConfig());
+				break;
+			case 6: //Esconder
+				Main.hideCanvas();
 				break;
 			case 4: //Equalizador
 				if (!equalizer.isAlive()) {
@@ -478,11 +495,7 @@ final class WindowPlayer extends Window implements MessageListener, PlayerListen
 		case 5: //context menu
 			switch (item.getId()) {
 			case 1: //Iniciar Seleção
-				if (isProcessingThreadFree()) {
-					//can't let mark while inserting...
-					listBox.setMarking(true);
-					Main.commandBarRefresh();
-				}
+				startMarking();
 				break;
 				
 			case 2: //Mover Selecionado
@@ -505,7 +518,7 @@ final class WindowPlayer extends Window implements MessageListener, PlayerListen
 				if (!listBox.isMarking()) {
 					//player menu
 					showMenu(1, new MenuItem[] {
-						new MenuItem("Modo Carro", 1),
+						new MenuItem("Redef. Volume", 1), //new MenuItem("Modo Carro", 1),
 						new MenuItem(player.isRadioMode() ? "Ouvir Músicas" : "Ouvir Rádio", 2),
 						new MenuItem(player.isRadioMode() ? "Adicionar Estação..." : "Adicionar Músicas...", 3),
 						null,
@@ -520,6 +533,7 @@ final class WindowPlayer extends Window implements MessageListener, PlayerListen
 							new MenuItem("Teclas...", 2),
 							new MenuItem("Cores...", 3),
 							null,
+							new MenuItem("Esconder", 6),
 							new MenuItem("Equalizador", 4),
 							//null,
 							//player.isRadioMode() ? new MenuItem("Estéreo", player.isRadioStereo()) : new MenuItem("Pré-Carregar Músicas", Behaviour.environmentGetLoadNextSong()),
@@ -540,10 +554,7 @@ final class WindowPlayer extends Window implements MessageListener, PlayerListen
 				if (player.isPaused() && (listBox.selectedIndex() == listBox.getHilightIndex())) {
 					player.pause();
 				} else {
-					if (listBox.selectedItem() != null) {
-						listBox.setHilightIndex(listBox.selectedIndex());
-						player.play((Song)listBox.selectedItem());
-					}
+					playSelectedSong();
 				}
 			} else if (command.equals(commandPrev)) {
 				player.play(getNextPrevSongAndSelect(false));
@@ -579,17 +590,13 @@ final class WindowPlayer extends Window implements MessageListener, PlayerListen
 		}
 	}
 	
-	protected final void eventOpened() {
-		if (isCarMode)
-			Main.openWindow(new WindowPlayerCar(player, equalizer, this, commandExit, commandPrev, commandPause, commandNext), false);
-	}
+	//protected final void eventOpened() {
+	//	if (isCarMode)
+	//		Main.openWindow(new WindowPlayerCar(player, equalizer, this, commandExit, commandPrev, commandPause, commandNext), false);
+	//}
 	
 	protected final boolean eventKeyPress(int keyCode, int repeatCount) {
-		if (keyCode == Behaviour.KeyDel) {
-			//remove the selected song from the list
-			if (repeatCount == 0)
-				eventCommand(commandDelete);
-		} else if (keyCode == Behaviour.KeyPause) {
+		if (keyCode == Behaviour.KeyPause) {
 			if (repeatCount == 0)
 				eventCommand(commandPause);
 		} else if (keyCode == Behaviour.KeyPrev) {
@@ -602,6 +609,19 @@ final class WindowPlayer extends Window implements MessageListener, PlayerListen
 			player.volumeDown();
 		} else if (keyCode == Behaviour.KeyVolUp) {
 			player.volumeUp();
+		} else if (keyCode == Behaviour.KeySel) {
+			if (repeatCount == 0) {
+				if (listBox.isMoving())
+					eventCommand(commandBack);
+				else if (listBox.isMarking())
+					eventCommand(commandMove);
+				else
+					startMarking();
+			}
+		} else if (keyCode == Behaviour.KeyDel) {
+			//remove the selected song from the list
+			if (repeatCount == 0)
+				eventCommand(commandDelete);
 		} else {
 			return super.eventKeyPress(keyCode, repeatCount);
 		}
@@ -767,7 +787,7 @@ final class WindowPlayer extends Window implements MessageListener, PlayerListen
 		
 		isChangingMode = false;
 		
-		resetGlobalVolume();
+		//resetGlobalVolume();
 	}
 	
 	private final void listChangeMode() {
@@ -780,13 +800,24 @@ final class WindowPlayer extends Window implements MessageListener, PlayerListen
 		startProcessingThread(MSG_CHANGEMODE);
 	}
 	
-	private final void listClear() {
+	public final boolean listClear() {
 		if (isProcessingThreadFree()) {
 			player.stopAndClear();
 			listBox.clear();
 			hasChangedPosition = false;
 			listSetChanged();
+			return true;
 		}
+		return false;
+	}
+	
+	public final boolean playSelectedSong() {
+		if (listBox.selectedItem() != null) {
+			listBox.setHilightIndex(listBox.selectedIndex());
+			player.play((Song)listBox.selectedItem());
+			return true;
+		}
+		return false;
 	}
 	
 	private final Song getNextPrevSongAndSelect(boolean nextSong) {

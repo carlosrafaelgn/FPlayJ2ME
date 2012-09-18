@@ -99,7 +99,9 @@ public final class Equalizer {
 		
 		setEnabled(false);
 		if (this.preset != null) {
-			setPreset(this.preset);
+			final Preset p = this.preset;
+			this.preset = null;
+			setPreset(p);
 			setEnabled(enabled);
 		}
 	}
@@ -255,9 +257,41 @@ public final class Equalizer {
 			else preset.bandsLevel[i] = bandsLevel[i];
 		}
 		if (this.preset.equals(preset)) {
-			setPreset(preset);
+			commitCustomChanges(-1);
 		}
 		return true;
+	}
+	
+	public final boolean setPresetBandLevel(Preset preset, int band, int bandLevel) {
+		if (!preset.isCustom || band < 0 || band >= preset.bandsLevel.length) {
+			return false;
+		}
+		final int minLevel = getMinBandLevel();
+		final int maxLevel = getMaxBandLevel();
+		if (bandLevel <= minLevel) preset.bandsLevel[band] = minLevel;
+		else if (bandLevel >= maxLevel) preset.bandsLevel[band] = maxLevel;
+		else preset.bandsLevel[band] = bandLevel;
+		if (this.preset.equals(preset)) {
+			commitCustomChanges(band);
+		}
+		return true;
+	}
+
+	private final void commitCustomChanges(int bandIndex) {
+		if (equalizer != null && preset != null && preset.isCustom) {
+			player.clearNext(); //clearNextAndWait();
+			
+			if (bandIndex < 0) {
+				final int tot = Math.min(bands.length, preset.bandsLevel.length);
+				for (int i = 0; i < tot; i++) {
+					equalizer.setBandLevel(preset.bandsLevel[i], i);
+				}
+			} else if (bandIndex < bands.length) {
+				equalizer.setBandLevel(preset.bandsLevel[bandIndex], bandIndex);
+			}
+			
+			equalizer.setEnabled(true);
+		}
 	}
 	
 	public final Preset getPreset() {
@@ -265,7 +299,7 @@ public final class Equalizer {
 	}
 	
 	public final boolean setPreset(Preset preset) {
-		if (equalizer != null && preset != null) {
+		if (equalizer != null && preset != null && preset != this.preset) {
 			player.clearNext(); //clearNextAndWait();
 			
 			if (!preset.isCustom) {

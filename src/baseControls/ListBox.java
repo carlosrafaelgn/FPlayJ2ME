@@ -927,25 +927,26 @@ public final class ListBox extends Control implements ControlListener {
 			int by = cy + itemHeight;
 			if (items.size() > 0) {
 				for (int i = firstIndex; i < items.size(); ++i) {
+					final boolean h = (hilightIndex == i);
 					if (cy >= bottom)
 						break;
 					if (clipY < by && cy <= bottom) {
-						if (isSelected(i)) {
-							Main.Customizer.paintItem(g, isPressed(), isFocused(), screenOffsetX + offsetScrollBar, cy, listWidth);
-							g.setColor(Main.Customizer.getItemTextColor(isFocused(), (hilightIndex == i)));
-						} else if (isMarked(i)) {
-							Main.Customizer.paintItem(g, false, false, screenOffsetX + offsetScrollBar, cy, listWidth);
-							g.setColor(Main.Customizer.getItemTextColor(false, (hilightIndex == i)));
-						} else {
-							g.setColor(Behaviour.ColorWindow);
-							g.fillRect(clipX, cy, clipWidth, itemHeight);
-							g.setColor(Main.Customizer.getItemTextColor(false, (hilightIndex == i)));
-						}
-						
-						if (itemPainter == null)
+						if (itemPainter == null) {
+							if (isSelected(i)) {
+								Main.Customizer.paintItem(g, false, isFocused(), h, screenOffsetX + offsetScrollBar, cy, listWidth);
+								g.setColor(Main.Customizer.getItemTextColor(isFocused(), h));
+							} else if (isMarked(i)) {
+								Main.Customizer.paintItem(g, false, false, h, screenOffsetX + offsetScrollBar, cy, listWidth);
+								g.setColor(Main.Customizer.getItemTextColor(false, h));
+							} else {
+								g.setColor(Behaviour.ColorWindow);
+								g.fillRect(clipX, cy, clipWidth, itemHeight);
+								g.setColor(Main.Customizer.getItemTextColor(false, h));
+							}
 							g.drawString(items.elementAt(i).toString(), screenOffsetX + 1 + offsetScrollBar, cy + fy, 0);
-						else
-							itemPainter.paintItem(g, i, items.elementAt(i), screenOffsetX + offsetScrollBar, cy, listWidth, itemHeight, screenOffsetX + 1 + offsetScrollBar, cy + fy);
+						} else {
+							itemPainter.paintItem(g, i, items.elementAt(i), isSelected(i), screenOffsetX + offsetScrollBar, cy, listWidth, itemHeight, screenOffsetX + 1 + offsetScrollBar, cy + fy);
+						}
 					}
 					cy += itemHeight;
 					by += itemHeight;
@@ -953,7 +954,7 @@ public final class ListBox extends Control implements ControlListener {
 			} else {
 				g.setColor(Behaviour.ColorWindow);
 				g.fillRect(clipX, clipY, clipWidth, clipHeight);
-				g.setColor(Behaviour.ColorHilightText);
+				g.setColor(Behaviour.ColorHilight);
 				g.drawString("[Vazio]", screenOffsetX + offsetScrollBar + (listWidth >> 1) - (Main.FontUI.stringWidth("[Vazio]") >> 1), cy + (getHeight() >> 1) - (itemHeight >> 1) + fy, 0);
 				cy = bottom;
 			}

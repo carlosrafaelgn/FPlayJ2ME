@@ -58,6 +58,8 @@ final class WindowBrowser extends Window implements ControlListener, MessageList
 	private static final int MSG_ADDFOLDER = 0x0003;
 	private static final int MSG_ADDFOLDER_REC = 0x0004;
 	private static final int MSG_GETCURRENTDIR = 0x0005;
+	private static final int MSG_PLAYFOLDER = 0x0006;
+	private static final int MSG_PLAYFOLDER_REC = 0x0007;
 	
 	private static String CurrentDir = "";
 	private final Command commandMenu, commandUpDir;
@@ -170,7 +172,7 @@ final class WindowBrowser extends Window implements ControlListener, MessageList
 				eventControl(listBox, ListBox.EVENT_ITEMSELECTED, listBox.selectedIndex(), listBox.selectedItem());
 				break;
 			default:
-				browserFolderAdd(((BrowserItem)listBox.selectedItem()).getItemFullPath(CurrentDir), item.getId() == 4);
+				browserFolderAdd(((BrowserItem)listBox.selectedItem()).getItemFullPath(CurrentDir), (item.getId() & 1) != 0, (item.getId() & 8) != 0);
 				break;
 			}
 		}
@@ -183,8 +185,11 @@ final class WindowBrowser extends Window implements ControlListener, MessageList
 				showMenu(1, new MenuItem[] {
 					new MenuItem("Retornar ao Player", 1),
 					null,
-					new MenuItem("Adicionar Pasta", 3),
-					new MenuItem("Adicionar Pasta e Sub Pastas", 4)
+					new MenuItem("Adicionar Pasta", 4),
+					new MenuItem("Adicionar Pasta e Subpastas", 5),
+					null,
+					new MenuItem("Tocar Pasta", 8),
+					new MenuItem("Tocar Pasta e Subpastas", 9)
 				});
 			} else if (listBox.selectedIndex() > 0) {
 				showMenu(1, new MenuItem[] {
@@ -214,18 +219,30 @@ final class WindowBrowser extends Window implements ControlListener, MessageList
 	}
 	//</editor-fold>
 
-	public final void paintItem(Graphics g, int itemIndex, Object item, int itemX, int itemY, int itemWidth, int itemHeight, int itemTextX, int itemTextY) {
+	public final void paintItem(Graphics g, int itemIndex, Object item, boolean selected, int itemX, int itemY, int itemWidth, int itemHeight, int itemTextX, int itemTextY) {
 		final BrowserItem bi = (BrowserItem)item;
 		final Image img;
+		final boolean h;
 		if (bi.Folder) {
 			img = imgFolder;
+			h = false;
 		} else {
 			if (itemIndex == 0) {
 				img = imgUp;
+				h = false;
 			} else {
-				g.setColor(Behaviour.ColorHilightText);
 				img = imgSong;
+				h = true;
 			}
+		}
+
+		if (selected) {
+			Main.Customizer.paintItem(g, false, listBox.isFocused(), h, itemX, itemY, itemWidth);
+			g.setColor(Main.Customizer.getItemTextColor(listBox.isFocused(), h));
+		} else {
+			g.setColor(Behaviour.ColorWindow);
+			g.fillRect(itemX, itemY, itemWidth, itemHeight);
+			g.setColor(Main.Customizer.getItemTextColor(false, h));
 		}
 		if (img != null) {
 			g.drawImage(img, itemTextX, itemY + (itemHeight >> 1) - (img.getHeight() >> 1), 0);
@@ -266,12 +283,22 @@ final class WindowBrowser extends Window implements ControlListener, MessageList
 			break;
 		case MSG_ADDFOLDER:
 			//this one runs on the player window...
-			browserFolderAdd_(oParam.toString(), false, true);
+			browserFolderAdd_(oParam.toString(), false, true, false);
 			player.setProcessingThread(null);
 			return;
 		case MSG_ADDFOLDER_REC:
 			//this one runs on the player window...
-			browserFolderAdd_(oParam.toString(), true, true);
+			browserFolderAdd_(oParam.toString(), true, true, false);
+			player.setProcessingThread(null);
+			return;
+		case MSG_PLAYFOLDER:
+			//this one runs on the player window...
+			browserFolderAdd_(oParam.toString(), false, true, true);
+			player.setProcessingThread(null);
+			return;
+		case MSG_PLAYFOLDER_REC:
+			//this one runs on the player window...
+			browserFolderAdd_(oParam.toString(), true, true, true);
 			player.setProcessingThread(null);
 			return;
 		case MSG_ADD:
@@ -303,7 +330,7 @@ final class WindowBrowser extends Window implements ControlListener, MessageList
 		player.startProcessingThread(MSG_ADD, 0, song);
 	}
 	
-	private final void browserFolderAdd_(String folder, boolean recursive, boolean first) {
+	private final void browserFolderAdd_(String folder, boolean recursive, boolean first, boolean play) {
 		Vector f = new Vector();
 		browserGetFolderContents_(folder, f);
 		
@@ -325,7 +352,7 @@ final class WindowBrowser extends Window implements ControlListener, MessageList
 				for (int i = 0; i < f.size(); ++i) {
 					final BrowserItem bi = (BrowserItem)f.elementAt(i);
 					if (bi.Folder) {
-						browserFolderAdd_(bi.getItemFullPath(folder), true, false);
+						browserFolderAdd_(bi.getItemFullPath(folder), true, false, play);
 					} else {
 						//over!
 						break;
@@ -341,15 +368,26 @@ final class WindowBrowser extends Window implements ControlListener, MessageList
 		
 		if (first) {
 			player.invalidateTitle();
+			if (play && firstAddedIndex >= 0) {
+				firstAddedIndex = -1;
+				if (!player.playSelectedSong()) {
+					playerListBox.selectItem(0);
+					player.playSelectedSong();
+				}
+			}
 		}
 	}
 	
-	private final void browserFolderAdd(String folder, boolean recursive) {
+	private final void browserFolderAdd(String folder, boolean recursive, boolean play) {
+		if (play && !player.listClear()) {
+			Main.threadProcessingAlert();
+			return;
+		}
 		if (!player.setProcessingThread(new MessageThread(this, "Browser Add Song"))) {
 			return;
 		}
 		
-		player.startProcessingThread(recursive ? MSG_ADDFOLDER_REC : MSG_ADDFOLDER, 0, folder);
+		player.startProcessingThread(play ? (recursive ? MSG_PLAYFOLDER_REC : MSG_PLAYFOLDER) : (recursive ? MSG_ADDFOLDER_REC : MSG_ADDFOLDER), 0, folder);
 	}
 	
 	private final boolean browserGetFolderContents_(String folder, Vector vector) {

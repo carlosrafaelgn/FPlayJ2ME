@@ -260,7 +260,7 @@ public final class DigitInputBox extends Control {
 		Main.FontUI.select(g);
 		g.setColor(Behaviour.ColorWindowText);
 		g.drawString(label, screenOffsetX + 2, screenOffsetY + 2, 0);
-		Main.Customizer.paintItem(g, isPressed(), isFocused(), screenOffsetX + 2, screenOffsetY + Main.FontUI.height + 2 + 1, getWidth() - 4);
+		Main.Customizer.paintItem(g, isPressed(), isFocused(), false, screenOffsetX + 2, screenOffsetY + Main.FontUI.height + 2 + 1, getWidth() - 4);
 		g.setColor(Main.Customizer.getItemTextColor(isFocused(), false));
 		if (isPressed()) {
 			screenOffsetX += 1;

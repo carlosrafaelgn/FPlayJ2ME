@@ -82,9 +82,9 @@ public abstract class Control implements MessageListener {
 			//g.drawRect(screenOffsetX + longPressVisualX, screenOffsetY + longPressVisualY, longPressVisualSize - 1, longPressVisualSize - 1);
 			g.setColor(Behaviour.ColorWindow);
 			g.fillRect(screenOffsetX + longPressVisualX, screenOffsetY + longPressVisualY, longPressVisualSize, longPressVisualSize);
-			final int cr = (((Behaviour.ColorHilightText & 0xFF0000) >> 16) * (longPressVisualCounter - longPressBonusCounter)) / longPressTriggerCounter;
-			final int cg = (((Behaviour.ColorHilightText & 0x00FF00) >> 8) * (longPressVisualCounter - longPressBonusCounter)) / longPressTriggerCounter;
-			final int cb = ((Behaviour.ColorHilightText & 0x0000FF) * (longPressVisualCounter - longPressBonusCounter)) / longPressTriggerCounter;
+			final int cr = (((Behaviour.ColorHilight & 0xFF0000) >> 16) * (longPressVisualCounter - longPressBonusCounter)) / longPressTriggerCounter;
+			final int cg = (((Behaviour.ColorHilight & 0x00FF00) >> 8) * (longPressVisualCounter - longPressBonusCounter)) / longPressTriggerCounter;
+			final int cb = ((Behaviour.ColorHilight & 0x0000FF) * (longPressVisualCounter - longPressBonusCounter)) / longPressTriggerCounter;
 			final int cs = ((longPressVisualSize - 2) * (longPressVisualCounter - longPressBonusCounter)) / longPressTriggerCounter;
 			g.setColor((cr << 16) | (cg << 8) | cb);
 			g.fillRect(screenOffsetX + longPressVisualX + 1, screenOffsetY + longPressVisualY + 1, cs, cs);

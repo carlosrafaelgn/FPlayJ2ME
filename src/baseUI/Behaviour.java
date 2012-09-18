@@ -42,13 +42,13 @@ public abstract class Behaviour {
 	private int scrollWidth;
 	private Image imageButtonNotFocused, imageButtonPressed, imageButtonFocused;
 	private Image imageMenuItem;
-	private Image imageSelectionNotFocused, imageSelectionPressed, imageSelectionFocused;
+	private Image imageSelectionNotFocused, imageHilightSelection, imageSelectionPressed, imageSelectionFocused;
 	private Image imageScroll, imageScrollPressed;
 	private Image imageTitle;
 	
-	public static final int ColorCount = 11;
-	public static int ColorButtonText, ColorButton, ColorHilightText, ColorMenuText, ColorMenu, ColorSelectionText, ColorSelection, ColorWindowText, ColorWindow, ColorTitleText, ColorTitle;
-	static int ColorLtButton, ColorDkButton, ColorDkButton2, ColorLtSelection, ColorDkSelection, ColorLtTitle, ColorDkTitle, ColorBlendedSelection;
+	public static final int ColorCount = 12;
+	public static int ColorButtonText, ColorButton, ColorHilight, ColorHilightText, ColorMenuText, ColorMenu, ColorSelectionText, ColorSelection, ColorWindowText, ColorWindow, ColorTitleText, ColorTitle;
+	static int ColorLtButton, ColorDkButton, ColorDkButton2, ColorLtSelection, ColorDkSelection, ColorLtHilight, ColorDkHilight, ColorLtTitle, ColorDkTitle, ColorBlendedSelection;
 	
 	public static final int ENV_COLORS = 0x0001;
 	public static final int ENV_FONTSIZE = 0x0002;
@@ -65,9 +65,11 @@ public abstract class Behaviour {
 	private final void environmentPrepareColors() {
 		ColorLtButton = Color.offsetColor(ColorButton, 25);
 		ColorLtSelection = Color.offsetColor(ColorSelection, 25);
+		ColorLtHilight = Color.offsetColor(ColorHilight, 25);
 		ColorLtTitle = Color.offsetColor(ColorTitle, 25);
 		ColorDkButton = Color.offsetColor(ColorButton, -25);
 		ColorDkSelection = Color.offsetColor(ColorSelection, -25);
+		ColorDkHilight = Color.offsetColor(ColorHilight, -25);
 		ColorDkTitle = Color.offsetColor(ColorTitle, -25);
 		ColorDkButton2 = Color.offsetColor(ColorButton, -45);
 		ColorBlendedSelection = Color.blendColor(ColorSelection, ColorWindow, NotFocusedOpacity);
@@ -95,6 +97,7 @@ public abstract class Behaviour {
 			imageButtonFocused = null;
 			imageMenuItem = null;
 			imageSelectionNotFocused = null;
+			imageHilightSelection = null;
 			imageSelectionPressed = null;
 			imageSelectionFocused = null;
 			imageTitle = null;
@@ -117,6 +120,8 @@ public abstract class Behaviour {
 				imageButtonFocused = environmentCreateGradientVertical(gr, mimg, Color.offsetColor(ColorLtButton, 50), Color.offsetColor(ColorDkButton, 35), ih);
 				
 				imageSelectionNotFocused = environmentCreateGradientVertical(gr, mimg, Color.blendColor(ColorLtSelection, ColorWindow, NotFocusedOpacity), Color.blendColor(ColorDkSelection, ColorWindow, NotFocusedOpacity), ih);
+
+				imageHilightSelection = environmentCreateGradientVertical(gr, mimg, ColorLtHilight, ColorDkHilight, ih);
 				
 				if (ColorButton == ColorSelection) {
 					imageSelectionPressed = imageButtonPressed;
@@ -139,6 +144,7 @@ public abstract class Behaviour {
 				imageButtonFocused = null;
 				imageMenuItem = null;
 				imageSelectionNotFocused = null;
+				imageHilightSelection = null;
 				imageSelectionPressed = null;
 				imageSelectionFocused = null;
 				imageTitle = null;
@@ -183,6 +189,7 @@ public abstract class Behaviour {
 	
 	private final void environmentCreateCrystal() {
 		final int ltb = Color.offsetColor(ColorButton, 75);
+		final int lth = Color.offsetColor(ColorHilight, 75);
 		final int lts = Color.offsetColor(ColorSelection, 75);
 		final int ltt = Color.offsetColor(ColorTitle, 75);
 		
@@ -197,6 +204,7 @@ public abstract class Behaviour {
 			imageButtonFocused = null;
 			imageMenuItem = null;
 			imageSelectionNotFocused = null;
+			imageHilightSelection = null;
 			imageSelectionPressed = null;
 			imageSelectionFocused = null;
 			imageTitle = null;
@@ -225,6 +233,8 @@ public abstract class Behaviour {
 				imageSelectionNotFocused = environmentCreateCrystalVertical(gr, mimg, Color.blendColor(lts, ColorWindow, NotFocusedOpacity), Color.blendColor(ColorLtSelection, ColorWindow, NotFocusedOpacity),
 					Color.blendColor(ColorSelection, ColorWindow, NotFocusedOpacity), Color.blendColor(ColorDkSelection, ColorWindow, NotFocusedOpacity), ih);
 				
+				imageHilightSelection = environmentCreateCrystalVertical(gr, mimg, lth, ColorLtHilight, ColorHilight, ColorDkHilight, ih);
+
 				if (ColorButton == ColorSelection) {
 					imageSelectionPressed = imageButtonPressed;
 					imageSelectionFocused = imageButtonNotFocused;
@@ -248,6 +258,7 @@ public abstract class Behaviour {
 				imageButtonFocused = null;
 				imageMenuItem = null;
 				imageSelectionNotFocused = null;
+				imageHilightSelection = null;
 				imageSelectionPressed = null;
 				imageSelectionFocused = null;
 				imageTitle = null;
@@ -290,6 +301,7 @@ public abstract class Behaviour {
 				imageButtonFocused = null;
 				imageMenuItem = null;
 				imageSelectionNotFocused = null;
+				imageHilightSelection = null;
 				imageSelectionPressed = null;
 				imageSelectionFocused = null;
 				imageTitle = null;
@@ -321,7 +333,8 @@ public abstract class Behaviour {
 	
 	public int[] getDefaultColors() {
 		return new int[] {
-				0xFF8800, //ColorHilightText
+				0xFF8800, //ColorHilight
+				0x000000, //ColorHilightText
 				0x555555, //ColorTitle
 				0xFFFFFF, //ColorTitleText
 				0x000000, //ColorWindow
@@ -346,26 +359,28 @@ public abstract class Behaviour {
 		if (index < ColorCount && index >= 0) {
 			switch (index) {
 			case 0:
-				return "Destaque";
+				return "Destaque (Fundo)";
 			case 1:
-				return "Título (Fundo)";
+				return "Destaque (Texto)";
 			case 2:
-				return "Título (Texto)";
+				return "Título (Fundo)";
 			case 3:
-				return "Janela (Fundo)";
+				return "Título (Texto)";
 			case 4:
-				return "Janela (Texto)";
+				return "Janela (Fundo)";
 			case 5:
-				return "Seleção (Fundo)";
+				return "Janela (Texto)";
 			case 6:
-				return "Seleção (Texto)";
+				return "Seleção (Fundo)";
 			case 7:
-				return "Menu (Fundo)";
+				return "Seleção (Texto)";
 			case 8:
-				return "Menu (Texto)";
+				return "Menu (Fundo)";
 			case 9:
-				return "Botão (Fundo)";
+				return "Menu (Texto)";
 			case 10:
+				return "Botão (Fundo)";
+			case 11:
 				return "Botão (Texto)";
 			}
 		}
@@ -385,36 +400,39 @@ public abstract class Behaviour {
 			color &= 0xFFFFFF;
 			switch (index) {
 			case 0:
-				ColorHilightText = color;
+				ColorHilight = color;
 				break;
 			case 1:
-				ColorTitle = color;
+				ColorHilightText = color;
 				break;
 			case 2:
-				ColorTitleText = color;
+				ColorTitle = color;
 				break;
 			case 3:
-				ColorWindow = color;
+				ColorTitleText = color;
 				break;
 			case 4:
-				ColorWindowText = color;
+				ColorWindow = color;
 				break;
 			case 5:
-				ColorSelection = color;
+				ColorWindowText = color;
 				break;
 			case 6:
-				ColorSelectionText = color;
+				ColorSelection = color;
 				break;
 			case 7:
-				ColorMenu = color;
+				ColorSelectionText = color;
 				break;
 			case 8:
-				ColorMenuText = color;
+				ColorMenu = color;
 				break;
 			case 9:
-				ColorButton = color;
+				ColorMenuText = color;
 				break;
 			case 10:
+				ColorButton = color;
+				break;
+			case 11:
 				ColorButtonText = color;
 				break;
 			}
@@ -425,26 +443,28 @@ public abstract class Behaviour {
 		if (index < ColorCount && index >= 0) {
 			switch (index) {
 			case 0:
-				return ColorHilightText;
+				return ColorHilight;
 			case 1:
-				return ColorTitle;
+				return ColorHilightText;
 			case 2:
-				return ColorTitleText;
+				return ColorTitle;
 			case 3:
-				return ColorWindow;
+				return ColorTitleText;
 			case 4:
-				return ColorWindowText;
+				return ColorWindow;
 			case 5:
-				return ColorSelection;
+				return ColorWindowText;
 			case 6:
-				return ColorSelectionText;
+				return ColorSelection;
 			case 7:
-				return ColorMenu;
+				return ColorSelectionText;
 			case 8:
-				return ColorMenuText;
+				return ColorMenu;
 			case 9:
-				return ColorButton;
+				return ColorMenuText;
 			case 10:
+				return ColorButton;
+			case 11:
 				return ColorButtonText;
 			}
 		}
@@ -588,11 +608,11 @@ public abstract class Behaviour {
 		return Main.FontUI.userHeight;
 	}
 	
-	public void paintItem(Graphics g, boolean pressed, boolean focused, int x, int y, int width) {
-		final Image img = (pressed ? imageSelectionPressed : (focused ? imageSelectionFocused : imageSelectionNotFocused));
+	public void paintItem(Graphics g, boolean pressed, boolean focused, boolean hilight, int x, int y, int width) {
+		final Image img = (pressed ? imageSelectionPressed : (focused ? (hilight ? imageHilightSelection : imageSelectionFocused) : imageSelectionNotFocused));
 		final int height = getItemHeight();
 		
-		drawFrame(g, pressed, ColorLtSelection, ColorDkSelection, x, y, width, height);
+		drawFrame(g, pressed, hilight ? ColorLtHilight : ColorLtSelection, hilight ? ColorDkHilight : ColorDkSelection, x, y, width, height);
 		
 		if (img != null) {
 			final int lx = x + width - 16 - 1;
@@ -603,13 +623,13 @@ public abstract class Behaviour {
 			}
 			g.drawImage(img, lx, y, 0);
 		} else {
-			g.setColor(pressed ? ColorDkSelection : (focused ? ColorSelection : ColorBlendedSelection));
+			g.setColor(pressed ? ColorDkSelection : (focused ? (hilight ? ColorHilight : ColorSelection) : ColorBlendedSelection));
 			g.fillRect(x + 1, y + 1, width - 2, height - 2);
 		}
 	}
 	
 	public int getItemTextColor(boolean focused, boolean hilighted) {
-		return (hilighted ? ColorHilightText : (focused ? ColorSelectionText : ColorWindowText));
+		return (hilighted ? (focused ? ColorHilightText : ColorHilight) : (focused ? ColorSelectionText : ColorWindowText));
 	}
 	
 	public void paintMenuBarSpace(Graphics g, int x, int y, int width, int height) {

@@ -36,5 +36,5 @@ package baseControls;
 import javax.microedition.lcdui.Graphics;
 
 public interface ItemPainter {
-	public void paintItem(Graphics g, int itemIndex, Object item, int itemX, int itemY, int itemWidth, int itemHeight, int itemTextX, int itemTextY);
+	public void paintItem(Graphics g, int itemIndex, Object item, boolean selected, int itemX, int itemY, int itemWidth, int itemHeight, int itemTextX, int itemTextY);
 }

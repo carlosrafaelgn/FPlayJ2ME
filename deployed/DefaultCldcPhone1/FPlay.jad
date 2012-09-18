@@ -1,7 +1,7 @@
 MIDlet-1: FPlay,/Icon.png,fplay.FPlay
 MIDlet-Description: Folder Player
 MIDlet-Icon: /Icon.png
-MIDlet-Jar-Size: 121768
+MIDlet-Jar-Size: 120735
 MIDlet-Jar-URL: FPlay.jar
 MIDlet-Name: FPlay
 MIDlet-Permissions: javax.microedition.io.Connector.file.read

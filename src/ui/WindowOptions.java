@@ -48,10 +48,10 @@ final class WindowOptions extends Window implements OverlayListener, ControlList
 	private final Player player;
 	
 	private final int envFont, envVibrate, envVisualEffects;
-	private final boolean envMenu, envRightHanded;
+	private final boolean envMenu, envPreventVerticalMenu, envRightHanded;
 	private final Command commandSave, commandCancel;
 	private final int[] availableTransitions;
-	private final ItemChoice itemMenu, itemFont, itemVisual, itemTransition, itemVolumeControl, itemSongFormat, itemRightHanded, itemTouchFeedback, itemControlPlayback, itemLoadNext;
+	private final ItemChoice itemMenu, itemPreventVerticalMenu, itemFont, itemVisual, itemTransition, itemVolumeControl, itemSongFormat, itemRightHanded, itemTouchFeedback, itemControlPlayback, itemLoadNext;
 	private final DigitInputBox textSS;
 	
 	public WindowOptions(Player player) {
@@ -61,12 +61,14 @@ final class WindowOptions extends Window implements OverlayListener, ControlList
 		commandSave = Main.commandSave();
 		commandCancel = Main.commandCancel();
 		envMenu = Main.environmentIsMenuAbove();
+		envPreventVerticalMenu = Main.environmentIsPreventingVerticalMenu();
 		envFont = Main.environmentGetFontSizeIndex();
 		envVisualEffects = Main.environmentGetUIEffects();
 		envVibrate = Main.environmentGetTouchFeedbackLevel();
 		envRightHanded = Main.environmentIsRightHanded();
 		
 		itemMenu = new ItemChoice(getContainer(), 0, 0, 16, this, "Posição do menu:", new String[] { "Abaixo", "Acima" });
+		itemPreventVerticalMenu = new ItemChoice(getContainer(), 0, 0, 16, this, "Menu vertical:", new String[] { "Permitir", "Evitar" });
 		itemFont = new ItemChoice(getContainer(), 0, 0, 16, this, "Tamanho da fonte:", new String[] { "Pequeno", "Médio", "Grande" });
 		itemVisual = new ItemChoice(getContainer(), 0, 0, 16, this, "Efeitos visuais:", new String[] { "Nenhum", "Tipo 1", "Tipo 2" });
 		
@@ -84,6 +86,7 @@ final class WindowOptions extends Window implements OverlayListener, ControlList
 		textSS = new DigitInputBox(getContainer(), 0, 0, 16, false, "Tempo para tela preta:");
 		
 		itemMenu.setSelectedIndex(envMenu ? 1 : 0);
+		itemPreventVerticalMenu.setSelectedIndex(envPreventVerticalMenu ? 1 : 0);
 		itemFont.setSelectedIndex(envFont);
 		itemVisual.setSelectedIndex(envVisualEffects);
 		itemTransition.setSelectedIndex(transitionToIndex(Main.environmentGetTransition()));
@@ -101,6 +104,7 @@ final class WindowOptions extends Window implements OverlayListener, ControlList
 		}
 		
 		getContainer().addControl(itemMenu, false);
+		getContainer().addControl(itemPreventVerticalMenu, false);
 		getContainer().addControl(itemFont, false);
 		getContainer().addControl(itemVisual, false);
 		getContainer().addControl(itemTransition, false);
@@ -148,6 +152,8 @@ final class WindowOptions extends Window implements OverlayListener, ControlList
 	public final void eventControl(Control control, int eventId, int eventArg1, Object eventArg2) {
 		if (control == itemMenu) {
 			Main.environmentSetMenuAbove(itemMenu.getSelectedIndex() != 0);
+		} else if (control == itemPreventVerticalMenu) {
+			Main.environmentSetPreventVerticalMenu(itemPreventVerticalMenu.getSelectedIndex() != 0);
 		} else if (control == itemFont) {
 			Main.environmentSetFontSizeIndex(itemFont.getSelectedIndex());
 		} else if (control == itemVisual) {
@@ -181,7 +187,8 @@ final class WindowOptions extends Window implements OverlayListener, ControlList
 		final int usableWidth = getWidth() - Main.Customizer.getScrollWidth();
 		
 		itemMenu.reposition(0, 0, usableWidth, 0, false);
-		itemFont.reposition(0, itemMenu.getBottom(), usableWidth, 0, false);
+		itemPreventVerticalMenu.reposition(0, itemMenu.getBottom(), usableWidth, 0, false);
+		itemFont.reposition(0, itemPreventVerticalMenu.getBottom(), usableWidth, 0, false);
 		itemVisual.reposition(0, itemFont.getBottom(), usableWidth, 0, false);
 		itemTransition.reposition(0, itemVisual.getBottom(), usableWidth, 0, false);
 		itemVolumeControl.reposition(0, itemTransition.getBottom(), usableWidth, 0, false);
@@ -242,6 +249,7 @@ final class WindowOptions extends Window implements OverlayListener, ControlList
 			Main.environmentSetTouchFeedbackLevel(envVibrate);
 			Main.environmentSetRightHanded(envRightHanded);
 			Main.environmentSetMenuAbove(envMenu);
+			Main.environmentSetPreventVerticalMenu(envPreventVerticalMenu);
 			Main.environmentSetUIEffects(envVisualEffects);
 			Main.environmentSetFontSizeIndex(envFont);
 			close();

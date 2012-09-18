@@ -259,10 +259,10 @@ final class WindowPlayerCar extends Window implements PlayerListener {
 		Main.FontTitle.select(g);
 		g.setColor(baseUI.Behaviour.ColorWindowText);
 		if ((clipY + clipHeight) > btnEqTxtY) {
-			g.drawString(txtEq, btnEqTxtX, btnEqTxtY, 0);
+			g.drawString(txtEq, screenOffsetX + btnEqTxtX, screenOffsetY + btnEqTxtY, 0);
 		}
-		g.drawString(title, 2, screenOffsetY + (getHeight() >> 1) - Main.FontTitle.height - 2, 0);
-		g.drawString(titleText.toString(), 2, screenOffsetY + (getHeight() >> 1) + 2, 0);
+		g.drawString(title, screenOffsetX + 2, screenOffsetY + (getHeight() >> 1) - Main.FontTitle.height - 2, 0);
+		g.drawString(titleText.toString(), screenOffsetX + 2, screenOffsetY + (getHeight() >> 1) + 2, 0);
 	}
 	
 	public final void attached() {

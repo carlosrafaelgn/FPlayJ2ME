@@ -110,7 +110,7 @@ final class WindowEqualizerCustom extends Window implements ControlListener {
 				for (int i = 0; i < sliders.length; i++) {
 					if (sliders[i] == control) {
 						currentLevels[i] = eventArg1;
-						equalizer.setPresetBandsLevel(preset, currentLevels);
+						equalizer.setPresetBandLevel(preset, i, eventArg1);
 						break;
 					}
 				}

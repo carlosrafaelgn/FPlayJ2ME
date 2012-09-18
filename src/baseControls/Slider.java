@@ -44,7 +44,7 @@ import baseUI.Main;
 public final class Slider extends Control {
 	private String label, unit;
 	private int labelWidth, valueWidth, buttonWidth, buttonHeight, offset, minimum, maximum, value, displayScale, displayScalePower, granularity;
-	private boolean stickingToCenter;
+	private boolean stickingToCenter, callOnRelease;
 	private ControlListener listener;
 	private String valueString;
 	private final StringBuffer displayScaleAdjust;
@@ -182,14 +182,24 @@ public final class Slider extends Control {
 			final int g = granularity - Math.abs(v % granularity);
 			setValue((keyCode == Main.KeyRight) ? (v + g) : (v - g));
 			invalidate();
+			callOnRelease = (repeatCount >= 1);
 			if (listener != null) {
-				listener.eventControl(this, EVENT_CHANGED, getValue(), null);
+				listener.eventControl(this, (repeatCount < 1) ? EVENT_CHANGED : EVENT_CHANGING, getValue(), null);
 			}
 			return true;
 		}
 		return false;
 	}
 	
+	protected final void eventKeyRelease(int keyCode) {
+		if ((keyCode == Main.KeyLeft || keyCode == Main.KeyRight) && callOnRelease) {
+			callOnRelease = false;
+			if (listener != null) {
+				listener.eventControl(this, EVENT_CHANGED, getValue(), null);
+			}
+		}
+	}
+
 	private final void changeValue(int x) {
 		final int w = getWidth();
 		int value;
@@ -252,6 +262,6 @@ public final class Slider extends Control {
 		}
 		final int y = screenOffsetY + Main.FontUI.height + 2 + 1;
 		g.drawLine(screenOffsetX + 2 + (buttonWidth >> 1), y + (buttonHeight >> 1), screenOffsetX + getWidth() - 2 - (buttonWidth >> 1), y + (buttonHeight >> 1));
-		Main.Customizer.paintItem(g, isPressed(), isFocused(), screenOffsetX + offset, y, buttonWidth);
+		Main.Customizer.paintItem(g, isPressed(), isFocused(), false, screenOffsetX + offset, y, buttonWidth);
 	}
 }

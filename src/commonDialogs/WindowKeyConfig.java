@@ -196,7 +196,14 @@ public final class WindowKeyConfig extends Window implements OverlayListener {
 		
 		sb.append("Atualmente: ");
 		final int kc = keys[keyConfigMode];
-		sb.append((kc == 0) ? "[Sem tecla]" : Main.getKeyDescription(kc));
+		if (kc == 0) {
+			sb.append("[Sem tecla]");
+		} else {
+			sb.append(Main.getKeyDescription(kc));
+			sb.append(" (");
+			sb.append(kc);
+			sb.append(')');
+		}
 		Main.FontUI.drawString(sb.toString(), g, screenOffsetX, bodyY + lineH, getWidth(), getHeight() - getTitleHeight() - lineH, 0);
 	}
 }

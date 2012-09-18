@@ -55,7 +55,7 @@ public final class Player implements javax.microedition.media.PlayerListener, Ru
 	
 	private PlayerListener listener;
 	private int volume; //0 to 10 (0 = mute)
-	private boolean paused, radioMode, radioStereo, reloadTime;
+	private boolean paused, radioMode, radioStereo, reloadTime, resetVolume;
 	private String totalTime;
 	private int totalTimeMS;
 	private boolean playAfterRecovery;
@@ -129,6 +129,7 @@ public final class Player implements javax.microedition.media.PlayerListener, Ru
 		this.currentSong = currentSong;
 		this.volume = ((volume > MaximumVolume) ? MaximumVolume : ((volume < MinimumVolume) ? MinimumVolume : volume));
 		this.radioMode = radioMode;
+		//this.resetVolume = !radioMode;
 		this.radioStereo = radioStereo;
 		setListener(listener);
 		
@@ -137,20 +138,26 @@ public final class Player implements javax.microedition.media.PlayerListener, Ru
 		reloadLast();
 	}
 	
-	private final void setGlobalVolume_(int volume) {
-		final VolumeControl control = (VolumeControl)javax.microedition.amms.GlobalManager.getControl("javax.microedition.media.control.VolumeControl");
-		if (control != null) {
-			control.setLevel(volume);
-		}
-	}
-	
-	public final void setGlobalVolume(int volume) {
+	private final boolean resetGlobalVolume_() {
 		try {
-			if (java.lang.Class.forName("javax.microedition.amms.GlobalManager") != null) {
-				setGlobalVolume_(volume);
+			final VolumeControl control = (VolumeControl)javax.microedition.amms.GlobalManager.getControl("javax.microedition.media.control.VolumeControl");
+			if (control != null) {
+				control.setLevel(MaximumVolume);
+				return true;
 			}
 		} catch (Throwable ex) {
 		}
+		return false;
+	}
+	
+	public final boolean resetGlobalVolume() {
+		try {
+			if (java.lang.Class.forName("javax.microedition.amms.GlobalManager") != null) {
+				return resetGlobalVolume_();
+			}
+		} catch (Throwable ex) {
+		}
+		return false;
 	}
 
 	private final void cleanupMsg(String where, String fileName, String errMsg, boolean failQuiet) {
@@ -186,6 +193,7 @@ public final class Player implements javax.microedition.media.PlayerListener, Ru
 		stop_(true);
 		
 		this.radioMode = radioMode;
+		this.resetVolume = !radioMode;
 		this.currentSong = currentSong;
 		
 		reloadLast();
@@ -611,8 +619,13 @@ public final class Player implements javax.microedition.media.PlayerListener, Ru
 						}
 						//addPlayerListener MUST come before start!
 						p.addPlayerListener(this);
-						if (startCurrent)
+						if (startCurrent) {
 							p.start();
+							if (resetVolume) {
+								resetVolume = false;
+								resetGlobalVolume();
+							}
+						}
 						mplayer = p;
 					} catch (Throwable ex) {
 						errMsg = ex.getMessage();
@@ -636,10 +649,35 @@ public final class Player implements javax.microedition.media.PlayerListener, Ru
 		this.volume = ((volume > MaximumVolume) ? MaximumVolume : ((volume < MinimumVolume) ? MinimumVolume : volume));
 		
 		if (ctrlVol != null) {
-			ctrlVol.setLevel(volume);
+			try {
+				ctrlVol.setLevel(volume);
+			} catch (Throwable ex) {
+				if (mplayer != null) {
+					try {
+						ctrlVol = (VolumeControl)mplayer.getControl("VolumeControl");
+						if (ctrlVol != null)
+							ctrlVol.setLevel(volume);
+					} catch (Throwable ex2) {
+						
+					}
+				}
+			}
 		}
+		
 		if (ctrlVolNext != null) {
-			ctrlVolNext.setLevel(volume);
+			try {
+				ctrlVolNext.setLevel(volume);
+			} catch (Throwable ex) {
+				if (mplayerNext != null) {
+					try {
+						ctrlVolNext = (VolumeControl)mplayerNext.getControl("VolumeControl");
+						if (ctrlVolNext != null)
+							ctrlVolNext.setLevel(volume);
+					} catch (Throwable ex2) {
+						
+					}
+				}
+			}
 		}
 	}
 	
@@ -754,6 +792,11 @@ public final class Player implements javax.microedition.media.PlayerListener, Ru
 				ctrlVolNext = null;
 				nextSong = null;
 				
+				if (resetVolume) {
+					resetVolume = false;
+					resetGlobalVolume();
+				}
+				
 				//update the ui here
 				if (autoCalled)
 					listener.getSong(true, false);
@@ -864,6 +907,10 @@ public final class Player implements javax.microedition.media.PlayerListener, Ru
 				}
 				reloadTime = false;
 				paused = false;
+				if (resetVolume) {
+					resetVolume = false;
+					resetGlobalVolume();
+				}
 			} else {
 				try {
 					mplayer.stop();
