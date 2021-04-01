@@ -8,3 +8,5 @@ This is an Eclipse project, and it is necessary to have ProGuard 4.6, or newer, 
 Unfortunately, due to security restrictions in some mobiles, everyday usage of this player could be very prejudiced, as it tries to access folders' contents for listing purposes.
 
 All the classes, methods and variables are in English, but all the strings are in Portuguese... I never took the time to translate them... ;)
+
+This project is licensed under the [MIT License](https://github.com/carlosrafaelgn/FPlayJ2ME/blob/master/LICENSE).
